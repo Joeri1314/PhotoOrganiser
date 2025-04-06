@@ -1,7 +1,6 @@
 package org.joeri;
 
 import java.io.File;
-import java.util.Date;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Scanner;
@@ -33,10 +32,10 @@ public class Main {
                     case 1:
                         System.out.println("Images and Metadata:");
                         for (File file : files) {
-                            Date dateTaken = MetadataReader.getDateTaken(file);
-                            String dateString = (dateTaken != null) ? dateTaken.toString() : "unknown";
-                            String tags = db.getTags(file.getAbsolutePath());
-                            System.out.println(file.getName() + " " + dateString + " " + tags);
+                            MediaFile media = new ImageFile(file); // can be polymorphic in future
+                            String dateString = (media.getDateTaken() != null) ? media.getDateTaken().toString() : "unknown";
+                            String tags = db.getTags(media.getFile().getAbsolutePath());
+                            System.out.println(media.getFile().getName() + " " + dateString + " " + tags);
                         }
                         break;
                     case 2:
@@ -56,7 +55,8 @@ public class Main {
                         System.out.println("Tag list:");
                         Set<String> allTags = new HashSet<>();
                         for (File file : files) {
-                            String tagsString = db.getTags(file.getAbsolutePath());
+                            MediaFile media = new ImageFile(file);
+                            String tagsString = db.getTags(media.getFile().getAbsolutePath());
                             if (tagsString != null && !tagsString.isEmpty()) {
                                 String[] tagsArray = tagsString.split(",");
                                 for (String tag : tagsArray) {
@@ -78,7 +78,8 @@ public class Main {
                     case 5:
                         System.out.println("Checking for duplicate images...");
                         for (File file : files) {
-                            db.addImage(file);
+                            MediaFile media = new ImageFile(file);
+                            db.addImage(media.getFile());
                         }
                         System.out.println("Duplicate check completed.");
                         break;

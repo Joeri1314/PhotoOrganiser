@@ -2,6 +2,7 @@ package org.joeri;
 
 import java.sql.*;
 import java.io.File;
+import java.util.*;
 
 public class Database {
     private final Connection conn;
@@ -65,11 +66,39 @@ public class Database {
     }
 
 
-    public void addTags(String filepath, String tags) throws SQLException {
+    public void addTags(String filepath, String newTags) throws SQLException {
+        String existingTags = getTags(filepath);
+        Set<String> tagSet = new HashSet<>();
+
+        if (existingTags != null && !existingTags.isEmpty()) {
+            tagSet.addAll(Arrays.asList(existingTags.split(",")));
+        }
+
+        tagSet.addAll(Arrays.asList(newTags.split(",")));
+
+        String mergedTags = String.join(",", tagSet);
+
         PreparedStatement pstmt = conn.prepareStatement("INSERT INTO images (filepath, tags) VALUES (?, ?) ON CONFLICT (filepath) DO UPDATE SET tags = ?");
         pstmt.setString(1, filepath);
-        pstmt.setString(2, tags);
-        pstmt.setString(3, tags);
+        pstmt.setString(2, mergedTags);
+        pstmt.setString(3, mergedTags);
+        pstmt.executeUpdate();
+    }
+
+    public void removeTags(String filepath, String tagsToRemove) throws SQLException {
+        String existingTags = getTags(filepath);
+        if (existingTags == null || existingTags.isEmpty()) return;
+
+        Set<String> tagSet = new HashSet<>(Arrays.asList(existingTags.split(",")));
+        Set<String> removeSet = new HashSet<>(Arrays.asList(tagsToRemove.split(",")));
+
+        tagSet.removeAll(removeSet);
+
+        String updatedTags = String.join(",", tagSet);
+
+        PreparedStatement pstmt = conn.prepareStatement("UPDATE images SET tags = ? WHERE filepath = ?");
+        pstmt.setString(1, updatedTags);
+        pstmt.setString(2, filepath);
         pstmt.executeUpdate();
     }
 
@@ -80,21 +109,35 @@ public class Database {
         return rs.next() ? rs.getString("tags") : null;
     }
 
-    public void searchByTag(String tag) throws SQLException {
-        PreparedStatement pstmt = conn.prepareStatement("SELECT filepath FROM images WHERE tags LIKE ?");
-        pstmt.setString(1, "%" + tag + "%");
+    public void searchByTags(String[] tags) throws SQLException {
+        if (tags == null || tags.length == 0) return;
+
+        StringBuilder queryBuilder = new StringBuilder("SELECT filepath FROM images WHERE ");
+        for (int i = 0; i < tags.length; i++) {
+            queryBuilder.append("tags LIKE ?");
+            if (i < tags.length - 1) {
+                queryBuilder.append(" OR ");
+            }
+        }
+
+        PreparedStatement pstmt = conn.prepareStatement(queryBuilder.toString());
+        for (int i = 0; i < tags.length; i++) {
+            pstmt.setString(i + 1, "%" + tags[i].trim() + "%");
+        }
+
         ResultSet rs = pstmt.executeQuery();
 
-        System.out.println("Images with tag '" + tag + "':");
+        System.out.println("Images matching any of the tags: " + String.join(", ", tags));
         boolean found = false;
         while (rs.next()) {
             System.out.println(rs.getString("filepath"));
             found = true;
         }
         if (!found) {
-            System.out.println("No images with tag '" + tag + "'");
+            System.out.println("No images matched the tags.");
         }
     }
+
 
     public void close() throws SQLException {
         conn.close();

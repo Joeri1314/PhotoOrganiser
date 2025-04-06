@@ -32,7 +32,7 @@ public class Main {
                     case 1:
                         System.out.println("Images and Metadata:");
                         for (File file : files) {
-                            MediaFile media = new ImageFile(file); // can be polymorphic in future
+                            MediaFile media = new ImageFile(file);
                             String dateString = (media.getDateTaken() != null) ? media.getDateTaken().toString() : "unknown";
                             String tags = db.getTags(media.getFile().getAbsolutePath());
                             System.out.println(media.getFile().getName() + " " + dateString + " " + tags);

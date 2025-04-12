@@ -21,7 +21,7 @@ public class PhotoOrganizerCLI {
 
     public void start() throws SQLException {
         while (true) {
-            System.out.println("\n1. List all images\n2. Tag images\n3. List all tags\n4. Search images by tags\n5. Remove duplicate images\n6. Remove tags from image\n7. Exit");
+            System.out.println("\n1. List all images\n2. Tag images\n3. List all tags\n4. Search images by tags\n5. Add new image to db and remove duplicate images\n6. Remove tags from image\n7. Exit");
 
             List<String> images = dao.listAllImages();
 

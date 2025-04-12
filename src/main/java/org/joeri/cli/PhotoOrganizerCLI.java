@@ -53,9 +53,9 @@ public class PhotoOrganizerCLI {
                     break;
                 case "3":
                     Set<String> tags = dao.listAllTags();
-                    int idx = 1;
+                    int i2 = 1;
                     for (String tag : tags) {
-                        System.out.println(idx++ + ". " + tag);
+                        System.out.println(i2++ + ". " + tag);
                     }
                     break;
                 case "4":
@@ -77,9 +77,9 @@ public class PhotoOrganizerCLI {
                         System.out.println((i + 1) + ". " + images.get(i));
                     }
                     System.out.println("Select image number to remove tags from:");
-                    idx = Integer.parseInt(scanner.nextLine().trim()) - 1;
-                    if (idx >= 0 && idx < images.size()) {
-                        Set<String> currentTags = dao.getTags(images.get(idx));
+                    int i3 = Integer.parseInt(scanner.nextLine().trim()) - 1;
+                    if (i3 >= 0 && i3 < images.size()) {
+                        Set<String> currentTags = dao.getTags(images.get(i3));
                         List<String> tagList = new ArrayList<>(currentTags);
                         for (int i = 0; i < tagList.size(); i++) {
                             System.out.println((i + 1) + ". " + tagList.get(i));
@@ -93,7 +93,7 @@ public class PhotoOrganizerCLI {
                                 tagsToRemove.add(tagList.get(tagIdx));
                             }
                         }
-                        manager.removeTags(images.get(idx), tagsToRemove);
+                        manager.removeTags(images.get(i3), tagsToRemove);
                     }
                     break;
                 case "7":
